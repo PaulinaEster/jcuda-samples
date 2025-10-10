@@ -12,4 +12,10 @@ of this repository is to collect and maintain the samples in a
 form that allows them to serve as a collection of snippets that
 can easily be copied and pasted into own projects to get started.
 
+EXECUTAR: 
 
+```bash
+cd seminario-gpu
+chmod +x run.sh
+./run.sh
+```
