@@ -12,10 +12,33 @@ of this repository is to collect and maintain the samples in a
 form that allows them to serve as a collection of snippets that
 can easily be copied and pasted into own projects to get started.
 
-EXECUTAR: 
-
+# ALOCAR GPU
 ```bash
-cd seminario-gpu
+srun --time 60 --mem 3000 --cpus-per-task 1 --gpus 1 --pty bash -i
+module load cuda/11.8 gcc/11.3 g++/11.3
+module available 
+```
+
+## BAIXAR JDK E MAVEN
+```bash 
 chmod +x run.sh
 ./run.sh
+```
+
+## APONTAR O JAVA_HOME
+```bash
+export JAVA_HOME=/opt/jdk-17
+export PATH=$JAVA_HOME/bin:$PATH
+
+source ~/.bashrc
+```
+
+## COMPILAR O PROJETO
+```bash
+../libs/apache-maven-3.9.11/bin/mvn clean compile
+```
+
+## EXECUTAR O EXEMPLO QUE DESEJA
+```bash
+../libs/apache-maven-3.9.11/bin/mvn exec:java -Dexec.mainClass=jcuda.driver.samples.JCudaVectorAdd
 ```

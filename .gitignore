@@ -6,9 +6,11 @@ JCudaVec/target/
 /JCudaSamples/target
 /JCudaSamples/src/main/resources/kernels/*.cubin
 /JCudaSamples/src/main/resources/kernels/*.ptx
-/JCudaSamples/
+# /JCudaSamples/
 /libs
 /deps
 *.zip
 .wget-hsts
 *.class
+*.ptx
+/seminario-gpu/localMavenRepository

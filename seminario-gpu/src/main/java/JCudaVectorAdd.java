@@ -45,7 +45,7 @@ public class JCudaVectorAdd {
         for (int i = 0; i < n; i++) {
             System.out.println(hostA[i] + " + " + hostB[i] + " = " + hostC[i]);
         }
-
+        System.out.println("Executado com sucesso!");
         // Libera memória
         cudaFree(devA);
         cudaFree(devB);
