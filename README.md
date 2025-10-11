@@ -27,7 +27,7 @@ chmod +x run.sh
 
 ## APONTAR O JAVA_HOME
 ```bash
-export JAVA_HOME=/opt/jdk-17
+export JAVA_HOME=<YOUR_PATH>/jcuda-samples/libs/openlogic-openjdk-8u462-b08-linux-x64
 export PATH=$JAVA_HOME/bin:$PATH
 
 source ~/.bashrc
