@@ -39,6 +39,6 @@ public enum Workload {
                 return w;
             }
         }
-        throw new IllegalArgumentException("Workload inválida: " + name);
+        throw new IllegalArgumentException("Workload inválido: " + name);
     }
 }

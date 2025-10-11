@@ -42,6 +42,5 @@ source ~/.bashrc
 ```bash
 ../libs/apache-maven-3.9.11/bin/mvn exec:java -Dexec.mainClass=jcuda.driver.samples.JCudaVectorAdd
 
-
-../libs/apache-maven-3.9.11/bin/mvn exec:java -Dexec.mainClass=serial.matrixmultiplication.MatrixMultiplication -DDEBUG=true -DTIMER=true -DWORKLOAD=C
+../libs/apache-maven-3.9.11/bin/mvn exec:java -Dexec.mainClass=serial.matrixmultiplication.MatrixMultiplication -DDEBUG=true -DTIMER=true -DWORKLOAD=G
 ```

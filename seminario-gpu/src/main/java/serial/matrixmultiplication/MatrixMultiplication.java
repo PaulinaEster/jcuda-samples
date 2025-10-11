@@ -2,38 +2,38 @@ package serial.matrixmultiplication;
 
 import utils.MatrixMultiplicationUtils;
 import utils.Config;
+import utils.WorkloadTimer;
+import utils.TimerType;
+
 public class MatrixMultiplication
 {
-    /**
-     * Entry point of this sample
-     *
-     * @param args Not used
-     * @throws IOException If an IO error occurs
-     */
     public static void main(String args[])  
-    {
-        System.out.println("Funcionando");
-        
+    {   
         Config.setupCommon();
+        
+        WorkloadTimer.timerStart(TimerType.TOTAL.ordinal());
+
         int N = Config.getWorkload().getN();
         int[][] matrix1 = new int[N][N];
         int[][] matrix2 = new int[N][N];
         int[][] matrix3 = new int[N][N];
+
         MatrixMultiplicationUtils.initialization(matrix1, matrix2, matrix3);
     
-        
+        WorkloadTimer.timerStart(TimerType.COMPUTATION.ordinal());
         matrixMultiplication(matrix1, matrix2, matrix3, N);
+        WorkloadTimer.timerStop(TimerType.COMPUTATION.ordinal());
 
+        WorkloadTimer.timerStop(TimerType.TOTAL.ordinal());
         MatrixMultiplicationUtils.verification(matrix3);
 
         Config.executionReport("Matrix Multiplication", 
-            0.0, 
+            WorkloadTimer.timerRead(TimerType.TOTAL.ordinal()), 
             MatrixMultiplicationUtils.isPassedVerification(), 
             "", 
             MatrixMultiplicationUtils.getChecksumString(),
-            ""
+            MatrixMultiplicationUtils.getTimerString()
         );
-
     }
 
     public static void matrixMultiplication(int[][] matrix1, int[][] matrix2, int[][] matrix3, int N) {
@@ -45,6 +45,5 @@ public class MatrixMultiplication
                 }
             }
         }
-    }
-
+    } 
 }
