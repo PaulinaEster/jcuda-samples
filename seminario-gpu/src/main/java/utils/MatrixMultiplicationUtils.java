@@ -22,7 +22,7 @@ public class MatrixMultiplicationUtils
     public static String getTimerString() {return timerString;}
     
     public static void initialization(int[][] matrix1, int[][] matrix2, int[][] matrix3) {
-        Config.setupCommon();
+        // Config.setupCommon();
         int n = Config.getWorkload().getN();
         // initial values of the global arrays
         for (int i = 0; i < n; i++) {
@@ -89,15 +89,15 @@ public class MatrixMultiplicationUtils
 
         // timer output
         StringBuilder timerBuilder = new StringBuilder();
-        timerBuilder.append(String.format("%25s\t%20s\t%20s%n", "Timer", "Time (s)", "Percentage"));
-        double total = WorkloadTimer.read(TimerType.TOTAL.ordinal());
-        double mem   = WorkloadTimer.read(TimerType.MEMORY_TRANSFERS.ordinal());
-        double lin   = WorkloadTimer.read(TimerType.LINEARIZATION.ordinal());
-        double comp  = WorkloadTimer.read(TimerType.COMPUTATION.ordinal());
+        // timerBuilder.append(String.format("%25s\t%20s\t%20s%n", "Timer", "Time (s)", "Percentage"));
+        // double total = WorkloadTimer.read(TimerType.TOTAL.ordinal());
+        // double mem   = WorkloadTimer.read(TimerType.MEMORY_TRANSFERS.ordinal());
+        // double lin   = WorkloadTimer.read(TimerType.LINEARIZATION.ordinal());
+        // double comp  = WorkloadTimer.read(TimerType.COMPUTATION.ordinal());
 
-        timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%%n", "memory_transfers", mem, mem * 100 / total));
-        timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%%n", "linearization", lin, lin * 100 / total));
-        timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%", "matrix_multiplication", comp, comp * 100 / total));
+        // timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%%n", "memory_transfers", mem, mem * 100 / total));
+        // timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%%n", "linearization", lin, lin * 100 / total));
+        // timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%", "matrix_multiplication", comp, comp * 100 / total));
 
         timerString = timerBuilder.toString();
     }

@@ -40,4 +40,48 @@ public class Config
         setDebug();
         setWorkload();
     }
+
+    public static void executionReport(
+            String applicationName, 
+            double executionTime,
+            boolean passedVerification,
+            String cpuName,
+            String checksumString,
+            String timerString) {
+
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println(" " + applicationName + ":");
+        System.out.println();
+        System.out.println(" Workload                  =     " + WORKLOAD.getName());
+        System.out.printf(" Execution time in seconds =     %.6f%n", executionTime);
+
+        if (passedVerification) {
+            System.out.println(" Correctness verification  =     SUCCESSFUL");
+        } else {
+            System.out.println(" Correctness verification  =     UNSUCCESSFUL");
+        }
+
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println(" Hardware:");
+        System.out.println();
+        System.out.println(" CPU                       =     " + cpuName);
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println(" Flags:");
+        System.out.println();
+        System.out.println(" Debug flag " + (DEBUG ? "enabled" : "disabled"));
+        System.out.println(" Timer flag " + (TIMER ? "enabled" : "disabled"));
+        System.out.println("----------------------------------------------------------------------------");
+        System.out.println(" Correctness:");
+        System.out.println();
+        System.out.println(checksumString);
+        System.out.println("----------------------------------------------------------------------------");
+
+        if (TIMER) {
+            System.out.println(" Timers:");
+            System.out.println();
+            System.out.println(timerString);
+            System.out.println("----------------------------------------------------------------------------");
+        }
+    }
+
 }
