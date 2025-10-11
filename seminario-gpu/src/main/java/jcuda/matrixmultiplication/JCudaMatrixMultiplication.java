@@ -3,7 +3,7 @@
  *
  * Copyright 2008-2016 Marco Hutter - http://www.jcuda.org
  */
-package jcuda;
+package jcuda.matrixmultiplication;
 
 import static jcuda.driver.JCudaDriver.cuCtxCreate;
 import static jcuda.driver.JCudaDriver.cuCtxSynchronize;
