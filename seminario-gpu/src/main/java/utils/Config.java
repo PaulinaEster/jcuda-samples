@@ -1,5 +1,8 @@
 package utils;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 import utils.Workload; 
 
 public class Config
@@ -48,10 +51,10 @@ public class Config
         String applicationName, 
         double executionTime,
         boolean passedVerification,
-        String cpuName,
         String checksumString,
         String timerString
     ) {
+        String cpuName = getCpuName();
         System.out.println("----------------------------------------------------------------------------");
         System.out.println(" " + applicationName + ":");
         System.out.println();
@@ -81,6 +84,28 @@ public class Config
             System.out.println();
             System.out.println(timerString);
             System.out.println("----------------------------------------------------------------------------");
+        }
+    }
+
+    private static String getCpuName(){
+       try {
+            String os = System.getProperty("os.name").toLowerCase();
+            String[] command;
+
+            command = new String[]{"bash", "-c", "LANG=C lscpu | grep 'Model name' | awk -F: '{print $2}'"};
+
+            Process process = new ProcessBuilder(command).start();
+            String line;
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                while ((line = reader.readLine()) != null) {
+                    return line.trim();
+                }
+            }
+            return " - ";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return " - ";
         }
     }
 }

@@ -1,8 +1,3 @@
-/*
- * JCuda - Java bindings for NVIDIA CUDA
- *
- * Copyright 2008-2016 Marco Hutter - http://www.jcuda.org
- */
 package jcuda.matrixmultiplication;
 
 import static jcuda.driver.JCudaDriver.cuCtxCreate;
@@ -28,14 +23,13 @@ import jcuda.driver.CUfunction;
 import jcuda.driver.CUmodule;
 import jcuda.driver.JCudaDriver;
 import jcuda.utils.JCudaSamplesUtils;
+import jcuda.*;
+import jcuda.driver.CUdevice_attribute;
 
-/**
- * This is a sample class demonstrating how to use the JCuda driver
- * bindings to load and execute a CUDA vector addition kernel.
- * The sample reads a CUDA file, compiles it to a PTX file
- * using NVCC, loads the PTX file as a module and executes
- * the kernel function.
- */
+import utils.MatrixMultiplicationUtils;
+import utils.Config;
+import utils.WorkloadTimer;
+import utils.TimerType;
 public class JCudaMatrixMultiplication
 {
     /**
@@ -46,13 +40,30 @@ public class JCudaMatrixMultiplication
      */
     public static void main(String args[]) throws IOException
     {
+        Config.setupCommon();
+
+        WorkloadTimer.timerStart(TimerType.TOTAL.ordinal());
+        
+        int N = Config.getWorkload().getN();
+        int[][] matrix1 = new int[N][N];
+        int[][] matrix2 = new int[N][N];
+        int[][] matrix3 = new int[N][N];
+        MatrixMultiplicationUtils.initialization(matrix1, matrix2, matrix3);
+        
+        int[] matrix1Linear = new int[N*N];
+        int[] matrix2Linear = new int[N*N];
+        int[] matrix3Linear = new int[N*N]; 
+
+        WorkloadTimer.timerStart(TimerType.LINEARIZATION.ordinal());
+        linearization(matrix1, matrix2, matrix3, matrix1Linear, matrix2Linear, matrix3Linear);
+        WorkloadTimer.timerStop(TimerType.LINEARIZATION.ordinal());
+
         // Enable exceptions and omit all subsequent error checks
         JCudaDriver.setExceptionsEnabled(true);
-
         // Create the PTX file by calling the NVCC
         String ptxFileName = JCudaSamplesUtils.preparePtxFile(
-            "src/main/resources/kernels/MatrixMultiplicationKernel.cu");
-
+            "src/main/resources/kernels/JCudaMatrixMultiplicationKernel.cu");
+            
         // Initialize the driver and create a context for the first device.
         cuInit(0);
         CUdevice device = new CUdevice();
@@ -60,87 +71,110 @@ public class JCudaMatrixMultiplication
         CUcontext context = new CUcontext();
         cuCtxCreate(context, 0, device);
 
+        int[] maxThreadsPerBlock = new int[1];
+        byte[] nameBytes = new byte[1024];
+
+        JCudaDriver.cuDeviceGetAttribute(maxThreadsPerBlock,
+            CUdevice_attribute.CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK,
+            device
+        );
+
+        JCudaDriver.cuDeviceGetName(nameBytes, nameBytes.length, device);
+        String deviceName = new String(nameBytes).trim();
+        
+        System.out.println("GPU: " + deviceName);
+        System.out.println("Máximo Threads: " + maxThreadsPerBlock[0]);
+
         // Load the ptx file.
         CUmodule module = new CUmodule();
         cuModuleLoad(module, ptxFileName);
 
-        // Obtain a function pointer to the "add" function.
+        // Obtain a function pointer to the "matrix_multiplication" function.
         CUfunction function = new CUfunction();
-        cuModuleGetFunction(function, module, "matrix_multiplication");
+        cuModuleGetFunction(function, module, "matrix_multiplication"); 
+        
+        CUdeviceptr deviceMatrix1 = new CUdeviceptr();
+        CUdeviceptr deviceMatrix2 = new CUdeviceptr();
+        CUdeviceptr deviceMatrix3 = new CUdeviceptr();
 
-        int numElements = 1024;
-
-        // Allocate and fill the host input data
-        float hostInputA[] = new float[numElements];
-        float hostInputB[] = new float[numElements];
-        for(int i = 0; i < numElements; i++)
-        {
-            hostInputA[i] = (float)i;
-            hostInputB[i] = (float)i;
-        }
-
-        // Allocate the device input data, and copy the
-        // host input data to the device
-        CUdeviceptr deviceInputA = new CUdeviceptr();
-        cuMemAlloc(deviceInputA, numElements * Sizeof.FLOAT);
-        cuMemcpyHtoD(deviceInputA, Pointer.to(hostInputA),
-            numElements * Sizeof.FLOAT);
-        CUdeviceptr deviceInputB = new CUdeviceptr();
-        cuMemAlloc(deviceInputB, numElements * Sizeof.FLOAT);
-        cuMemcpyHtoD(deviceInputB, Pointer.to(hostInputB),
-            numElements * Sizeof.FLOAT);
-
-        // Allocate device output memory
-        CUdeviceptr deviceOutput = new CUdeviceptr();
-        cuMemAlloc(deviceOutput, numElements * Sizeof.FLOAT);
+        // Alocação de dados para o device
+        cuMemAlloc(deviceMatrix1, N * N * Sizeof.INT);
+        cuMemAlloc(deviceMatrix2, N * N * Sizeof.INT); 
+        cuMemAlloc(deviceMatrix3, N * N * Sizeof.INT);
+        
+        // Tranferencia de dados para a memoria do device
+        WorkloadTimer.timerStart(TimerType.MEMORY_TRANSFERS.ordinal());
+        cuMemcpyHtoD(deviceMatrix1, Pointer.to(matrix1Linear), N * N * Sizeof.INT);
+        cuMemcpyHtoD(deviceMatrix2, Pointer.to(matrix2Linear), N * N * Sizeof.INT);
+        cuMemcpyHtoD(deviceMatrix3, Pointer.to(matrix3Linear), N * N * Sizeof.INT);
+        WorkloadTimer.timerStop(TimerType.MEMORY_TRANSFERS.ordinal());
 
         // Set up the kernel parameters: A pointer to an array
         // of pointers which point to the actual values.
         Pointer kernelParameters = Pointer.to(
-            Pointer.to(new int[]{numElements}),
-            Pointer.to(deviceInputA),
-            Pointer.to(deviceInputB),
-            Pointer.to(deviceOutput)
+            Pointer.to(new int[]{N * N}),
+            Pointer.to(deviceMatrix1),
+            Pointer.to(deviceMatrix2),
+            Pointer.to(deviceMatrix3)
         );
 
         // Call the kernel function.
-        int blockSizeX = 256;
-        int gridSizeX = (int)Math.ceil((double)numElements / blockSizeX);
+        int threads = maxThreadsPerBlock[0];
+        int blockSize = (int)Math.ceil((double)(N * N) / threads);
+        
+        WorkloadTimer.timerStart(TimerType.COMPUTATION.ordinal());
         cuLaunchKernel(function,
-            gridSizeX,  1, 1,      // Grid dimension
-            blockSizeX, 1, 1,      // Block dimension
+            blockSize,  1, 1,      // Grid dimension
+            threads, 1, 1,      // Block dimension
             0, null,               // Shared memory size and stream
             kernelParameters, null // Kernel- and extra parameters
         );
         cuCtxSynchronize();
+        WorkloadTimer.timerStop(TimerType.COMPUTATION.ordinal());
+        
+        WorkloadTimer.timerStart(TimerType.MEMORY_TRANSFERS.ordinal());
+        cuMemcpyDtoH(Pointer.to(matrix3Linear), deviceMatrix3, N * N * Sizeof.FLOAT);
+        WorkloadTimer.timerStop(TimerType.MEMORY_TRANSFERS.ordinal());
 
-        // Allocate host output memory and copy the device output
-        // to the host.
-        float hostOutput[] = new float[numElements];
-        cuMemcpyDtoH(Pointer.to(hostOutput), deviceOutput,
-            numElements * Sizeof.FLOAT);
+        // Deslinaraização dos dados para matrix3
+        WorkloadTimer.timerStart(TimerType.DELINIARIZATION.ordinal());
+        deslinearization(matrix3,matrix3Linear);
+        WorkloadTimer.timerStop(TimerType.DELINIARIZATION.ordinal());
 
-        // Verify the result
-        boolean passed = true;
-        for(int i = 0; i < numElements; i++)
-        {
-            float expected = i+i;
-            if (Math.abs(hostOutput[i] - expected) > 1e-5)
-            {
-                System.out.println(
-                    "At index "+i+ " found "+hostOutput[i]+
-                    " but expected "+expected);
-                passed = false;
-                break;
-            }
-        }
-        System.out.println("Test "+(passed?"PASSED":"FAILED"));
+        WorkloadTimer.timerStop(TimerType.TOTAL.ordinal());
 
-        // Clean up.
-        cuMemFree(deviceInputA);
-        cuMemFree(deviceInputB);
-        cuMemFree(deviceOutput);
+        MatrixMultiplicationUtils.verification(matrix3);
+        Config.executionReport("Matrix Multiplication", 
+            WorkloadTimer.timerRead(TimerType.TOTAL.ordinal()), 
+            MatrixMultiplicationUtils.isPassedVerification(),
+            MatrixMultiplicationUtils.getChecksumString(),
+            MatrixMultiplicationUtils.getTimerString()
+        );
+        
+        cuMemFree(deviceMatrix1);
+        cuMemFree(deviceMatrix2);
+        cuMemFree(deviceMatrix3);
     }
 
-
+    private static void linearization(int[][] matrix1, int[][] matrix2, int[][] matrix3, int[] matrix1L, int[] matrix2L, int[] matrix3L){
+        int n = Config.getWorkload().getN();
+        
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                matrix1L[i + j * n] = matrix1[i][j];
+                matrix2L[i + j * n] = matrix2[i][j];
+                matrix3L[i + j * n] = matrix3[i][j]; 
+            }
+        }
+    }
+    
+    private static void deslinearization(int[][] matrix3, int[] matrix3L){
+        int n = Config.getWorkload().getN();
+        
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+               matrix3[i][j] = matrix3L[i + j * n]; 
+            }
+        }
+    }
 }

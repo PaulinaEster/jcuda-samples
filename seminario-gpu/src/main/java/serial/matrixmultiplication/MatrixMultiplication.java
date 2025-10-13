@@ -29,8 +29,7 @@ public class MatrixMultiplication
 
         Config.executionReport("Matrix Multiplication", 
             WorkloadTimer.timerRead(TimerType.TOTAL.ordinal()), 
-            MatrixMultiplicationUtils.isPassedVerification(), 
-            "", 
+            MatrixMultiplicationUtils.isPassedVerification(),
             MatrixMultiplicationUtils.getChecksumString(),
             MatrixMultiplicationUtils.getTimerString()
         );

@@ -4,5 +4,6 @@ public enum TimerType {
     TOTAL,
     MEMORY_TRANSFERS,
     LINEARIZATION,
-    COMPUTATION
+    COMPUTATION,
+    DELINIARIZATION
 }
