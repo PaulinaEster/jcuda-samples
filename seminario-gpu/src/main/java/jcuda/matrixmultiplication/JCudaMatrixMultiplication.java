@@ -112,10 +112,10 @@ public class JCudaMatrixMultiplication
         // Set up the kernel parameters: A pointer to an array
         // of pointers which point to the actual values.
         Pointer kernelParameters = Pointer.to(
-            Pointer.to(new int[]{N * N}),
             Pointer.to(deviceMatrix1),
             Pointer.to(deviceMatrix2),
-            Pointer.to(deviceMatrix3)
+            Pointer.to(deviceMatrix3),
+            Pointer.to(new int[]{N})
         );
 
         // Call the kernel function.

@@ -1,0 +1,3 @@
+CCOMPILER = gcc
+
+CFLAGS = -Wall -O3 -mcmodel=large -lm

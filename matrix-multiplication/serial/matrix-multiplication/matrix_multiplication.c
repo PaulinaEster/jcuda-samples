@@ -39,15 +39,51 @@
  * This version uses arrays with two dimensions
  * --------------------------------------------------------------------------------------------------------------
  */
-// #include <cuda_runtime.h> 
+#include "../../include/matrix-multiplication/matrix_multiplication.h"
 
-extern "C"
-__global__ void matrix_multiplication(int* matrix1, int* matrix2, int* matrix3, int N){
-	int tid = blockIdx.x * blockDim.x + threadIdx.x;
-	if(tid > (N * N)) {return;}
-    int j = (tid / N) % N; // altura largura
-    int k = tid % N;
-    for(int i = 0; i < N; i++){
-        matrix3[j + k * N] += matrix1[j + i * N] * matrix2[i + k * N];
-    }
+int main(int argc, char const *argv[]){	
+	timer_start(TIMER_TOTAL);
+
+	// memory allocation of the global memory
+	matrix1 = (int**)malloc(sizeof(int*) * N);
+	matrix2 = (int**)malloc(sizeof(int*) * N);
+	matrix3 = (int**)malloc(sizeof(int*) * N); 
+	for(int i=0; i < N; i++){	    
+		matrix1[i] = (int*)malloc(sizeof(int) * N);
+		matrix2[i] = (int*)malloc(sizeof(int) * N);
+		matrix3[i] = (int*)malloc(sizeof(int) * N);
+	}
+
+	// initial values
+	initialization(matrix1, matrix2, matrix3);
+
+	// matrix multiplication
+	if(timer_flag){timer_start(TIMER_COMPUTATION);}
+	matrix_multiplication(matrix1, matrix2, matrix3);
+	if(timer_flag){timer_stop(TIMER_COMPUTATION);}
+
+	timer_stop(TIMER_TOTAL);
+
+	// checksum routine
+	verification(matrix3);
+
+	// print results
+	debug_results(matrix3);	
+
+	// freeing memory and stuff
+	release_resources(matrix1, matrix2, matrix3);
+
+	execution_report((char*)"Matrix Multiplication", (char*)WORKLOAD, timer_read(TIMER_TOTAL), passed_verification);
+
+	return 0;
+}
+
+void matrix_multiplication(int** matrix1, int** matrix2, int** matrix3){
+	for(int i=0; i<N; i++){
+		for(int j=0; j<N; j++){
+			for(int k=0; k<N; k++){
+				matrix3[i][j] += matrix1[i][k] * matrix2[k][j];
+			}
+		}
+	}	
 }
