@@ -42,7 +42,6 @@ public class JCudaMatrixMultiplication
     {
         Config.setupCommon();
 
-        WorkloadTimer.timerStart(TimerType.TOTAL.ordinal());
         
         int N = Config.getWorkload().getN();
         int[][] matrix1 = new int[N][N];
@@ -54,10 +53,12 @@ public class JCudaMatrixMultiplication
         int[] matrix2Linear = new int[N*N];
         int[] matrix3Linear = new int[N*N]; 
 
+        WorkloadTimer.timerStart(TimerType.TOTAL.ordinal());
         WorkloadTimer.timerStart(TimerType.LINEARIZATION.ordinal());
         linearization(matrix1, matrix2, matrix3, matrix1Linear, matrix2Linear, matrix3Linear);
         WorkloadTimer.timerStop(TimerType.LINEARIZATION.ordinal());
 
+        WorkloadTimer.timerStart(TimerType.JCUDADRIVER.ordinal());
         // Enable exceptions and omit all subsequent error checks
         JCudaDriver.setExceptionsEnabled(true);
         // Create the PTX file by calling the NVCC
@@ -92,18 +93,19 @@ public class JCudaMatrixMultiplication
         // Obtain a function pointer to the "matrix_multiplication" function.
         CUfunction function = new CUfunction();
         cuModuleGetFunction(function, module, "matrix_multiplication"); 
+        WorkloadTimer.timerStop(TimerType.JCUDADRIVER.ordinal());
         
         CUdeviceptr deviceMatrix1 = new CUdeviceptr();
         CUdeviceptr deviceMatrix2 = new CUdeviceptr();
         CUdeviceptr deviceMatrix3 = new CUdeviceptr();
 
+        WorkloadTimer.timerStart(TimerType.MEMORY_TRANSFERS.ordinal());
         // Alocação de dados para o device
         cuMemAlloc(deviceMatrix1, N * N * Sizeof.INT);
         cuMemAlloc(deviceMatrix2, N * N * Sizeof.INT); 
         cuMemAlloc(deviceMatrix3, N * N * Sizeof.INT);
         
         // Tranferencia de dados para a memoria do device
-        WorkloadTimer.timerStart(TimerType.MEMORY_TRANSFERS.ordinal());
         cuMemcpyHtoD(deviceMatrix1, Pointer.to(matrix1Linear), N * N * Sizeof.INT);
         cuMemcpyHtoD(deviceMatrix2, Pointer.to(matrix2Linear), N * N * Sizeof.INT);
         cuMemcpyHtoD(deviceMatrix3, Pointer.to(matrix3Linear), N * N * Sizeof.INT);
@@ -137,9 +139,9 @@ public class JCudaMatrixMultiplication
         WorkloadTimer.timerStop(TimerType.MEMORY_TRANSFERS.ordinal());
 
         // Deslinaraização dos dados para matrix3
-        WorkloadTimer.timerStart(TimerType.DELINIARIZATION.ordinal());
+        WorkloadTimer.timerStart(TimerType.DELINEARIZATION.ordinal());
         deslinearization(matrix3,matrix3Linear);
-        WorkloadTimer.timerStop(TimerType.DELINIARIZATION.ordinal());
+        WorkloadTimer.timerStop(TimerType.DELINEARIZATION.ordinal());
 
         WorkloadTimer.timerStop(TimerType.TOTAL.ordinal());
 

@@ -3,12 +3,12 @@
 
 declare -A DIRETORIOS 
 
-# DIRETORIOS["./seminario-gpu"]="jcuda.matrixmultiplication.JCudaMatrixMultiplication|serial.matrixmultiplication.MatrixMultiplication"
-DIRETORIOS["./seminario-gpu"]="serial.matrixmultiplication.MatrixMultiplication" 
+DIRETORIOS["./seminario-gpu"]="jcuda.matrixmultiplication.JCudaMatrixMultiplication|serial.matrixmultiplication.MatrixMultiplication"
+#DIRETORIOS["./seminario-gpu"]="serial.matrixmultiplication.MatrixMultiplication" 
 
 # classes=("H" "G")
-classes=("A" "B" "C" "D" "F" "G" "H")
-timers=("matrix_multiplication" "memory_transfers" "linearization" "deslinearization")
+classes=("H" "H" "H" "H" "H")
+timers=("matrix_multiplication" "memory_transfers" "linearization" "deslinearization" "jcuda_driver")
 # Arquivo que terá a saida do resultado.
 resultado="./resultados/resultado.log"
 # Arquivo de log temporario
@@ -18,22 +18,21 @@ logfile="./resultados/execucao.log"
 > "$logfile"
 > "$resultado"
 
-count=1 
+HOME_DIR="$(pwd)"
+
 for dir in "${!DIRETORIOS[@]}"
 do
     echo "---------- COMPILANDO $dir -----------"
     (source ~/.bashrc && cd "$dir" && ../libs/apache-maven-3.9.11/bin/mvn clean compile)
 done
 
-
 for dir in "${!DIRETORIOS[@]}"
 do 
     IFS=$'|' read -ra benchmarks <<<"${DIRETORIOS[$dir]}"
-    for workload in "${classes[@]}"
-    do
-        for bench in "${benchmarks[@]}"
+    for bench in "${benchmarks[@]}"
+    do 
+        for workload in "${classes[@]}"
         do
-            echo "----- INICIO EXECUÇÃO DE $dir $bench" >> $resultado
             (cd "$dir" && ../libs/apache-maven-3.9.11/bin/mvn exec:java -Dexec.mainClass=$bench -DTIMER=true -DWORKLOAD=$workload) >> "$logfile" 2>&1
             if [ $? -ne 0 ]; then
                 echo "Erro na execução de '../libs/apache-maven-3.9.11/bin/mvn exec:java -Dexec.mainClass=$bench -DTIMER=true -DWORKLOAD=$workload' em $dir. Abortando." | tee -a "$logfile"
@@ -45,8 +44,7 @@ do
             
             for timer in "${timers[@]}"
             do  
-                grep -m1 -E "$timer" "$logfile" | tr -d '\n' >> "$resultado" 
-                ((count++)) 
+                grep -m1 -E "$timer" "$logfile" | tr -d '\n' >> "$resultado"  
             done
             > "$logfile" 
             echo " " >> $resultado
@@ -54,28 +52,33 @@ do
     done
 done
 
+CUDA_DIR=("./matrix-multiplication/gpu/matrix-multiplication" "./matrix-multiplication/serial/matrix-multiplication")
+for dir in "${!CUDA_DIR[@]}"
+do
+    echo "---------- COMPILANDO $dir -----------"
+    cd $dir && make matrix_multiplication WORKLOAD=$workload TIMER=ON
+done
+for dir in "${CUDA_DIR[@]}"
+do 
+    for workload in "${classes[@]}"
+    do  
+        cd $HOME_DIR && $dir/matrix_multiplication.$workload.exe >> "$logfile" 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Erro na execução do '$dir/matrix_multiplication.$workload.exe' em $dir. Abortando."
+            exit 1
+        fi 
+        echo -n -e "$dir.$workload \t TEMPO: " | tee -a >> "$resultado" 
+        
+        sed -n 's/.*Execution time in seconds *= *\([0-9.]*\).*/\1/p' $logfile | tr -d '\n' >> "$resultado"
 
-# for dir in "${!cppruns[@]}"
-# do
-#     echo "----- INICIO EXECUÇÃO SEQUENCIAL DE $dir" >> $resultado
-#     for workload in "${classes[@]}"
-#     do
-#         IFS=$'|' read -ra commands <<<"${cppruns[$dir]}"
-#         for cmd in "${commands[@]}"
-#         do
-#             echo "==== $count EXECUÇÃO SEQUENCIAL $count: GCC $dir/$cmd.$workload "
-#             ($dir/$cmd.$workload) >> "$logfile" 2>&1
-#             if [ $? -ne 0 ]; then
-#                 echo "Erro na execução do gcc '$cmd.$workload' em $dir. Abortando."
-#                 exit 1
-#             fi  
-#             echo -n -e "$dir/$cmd.$workload \t ENTRADA: " | tee -a >> "$resultado" 
-#             sed -n 's/.*Size *= *\([0-9.]*\).*/\1/p' $logfile | tr -d '\n' >> "$resultado"
-#             echo -n " \t TEMPO: " | tee -a >> "$resultado" 
-#             sed -n 's/.*Time in seconds *= *\([0-9.]*\).*/\1/p' $logfile >> "$resultado" 
-#             > "$logfile" 
-#             ((count++))
-#         done
-#     done
-# done
+        for timer in "${timers[@]}"
+        do  
+            grep -m1 -E "$timer" "$logfile" | tr -d '\n' >> "$resultado" 
+            ((count++)) 
+        done
+        > "$logfile" 
+        echo " " >> $resultado 
+    done
+done
+
 echo "Script finalizado. Saída salva em $logfile."

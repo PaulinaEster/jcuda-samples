@@ -11,8 +11,6 @@ public class MatrixMultiplication
     {   
         Config.setupCommon();
         
-        WorkloadTimer.timerStart(TimerType.TOTAL.ordinal());
-
         int N = Config.getWorkload().getN();
         int[][] matrix1 = new int[N][N];
         int[][] matrix2 = new int[N][N];
@@ -20,6 +18,7 @@ public class MatrixMultiplication
 
         MatrixMultiplicationUtils.initialization(matrix1, matrix2, matrix3);
     
+        WorkloadTimer.timerStart(TimerType.TOTAL.ordinal());
         WorkloadTimer.timerStart(TimerType.COMPUTATION.ordinal());
         matrixMultiplication(matrix1, matrix2, matrix3, N);
         WorkloadTimer.timerStop(TimerType.COMPUTATION.ordinal());

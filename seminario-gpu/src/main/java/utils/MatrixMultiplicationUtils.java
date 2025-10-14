@@ -82,10 +82,14 @@ public class MatrixMultiplicationUtils
         double mem   = WorkloadTimer.timerRead(TimerType.MEMORY_TRANSFERS.ordinal());
         double lin   = WorkloadTimer.timerRead(TimerType.LINEARIZATION.ordinal());
         double comp  = WorkloadTimer.timerRead(TimerType.COMPUTATION.ordinal());
+        double deslin  = WorkloadTimer.timerRead(TimerType.DELINEARIZATION.ordinal());
+        double jcuda  = WorkloadTimer.timerRead(TimerType.JCUDADRIVER.ordinal());
 
         timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%%n", "memory_transfers", mem, mem * 100 / total));
         timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%%n", "linearization", lin, lin * 100 / total));
-        timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%", "matrix_multiplication", comp, comp * 100 / total));
+        timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%%n", "matrix_multiplication", comp, comp * 100 / total));
+        timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%%n", "deslinearization", deslin, deslin * 100 / total));
+        timerBuilder.append(String.format("%25s\t%20f\t%19.2f%%", "jcuda_driver", jcuda, jcuda * 100 / total));
 
         timerString = timerBuilder.toString();
     }

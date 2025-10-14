@@ -73,7 +73,16 @@ __global__ void matrix_multiplication(int* matrix1, int* matrix2, int* matrix3){
 }
 
 int main(int argc, char const *argv[]){	
-	timer_start(TIMER_TOTAL);
+	int gpu_device_id = 0;
+  	cudaDeviceProp gpu_device_properties;
+    cudaSetDevice(gpu_device_id);
+    cudaGetDeviceProperties(&gpu_device_properties, gpu_device_id);
+
+	printf("%s\n", gpu_device_properties.name);
+	printf("%d\n", gpu_device_properties.warpSize);
+	printf("%d\n", gpu_device_properties.maxThreadsPerBlock);
+	int threads = gpu_device_properties.maxThreadsPerBlock;
+	int blocks = (((N*N)/threads) + ((N*N)%threads));
 	
 	// memory allocation of the global memory
 	matrix1 = (int**)malloc(sizeof(int*) * N);
@@ -87,6 +96,7 @@ int main(int argc, char const *argv[]){
 
 	// initial values
 	initialization(matrix1, matrix2, matrix3);
+	timer_start(TIMER_TOTAL);
 
 	int *matrix1_d, *matrix2_d, *matrix3_d, *matrix1_l, *matrix2_l, *matrix3_l;
 
@@ -111,7 +121,8 @@ int main(int argc, char const *argv[]){
 
 	// matrix multiplication
 	if(timer_flag){timer_start(TIMER_COMPUTATION);}
-	matrix_multiplication<<<BLOCKS, THREADS>>>(matrix1_d, matrix2_d, matrix3_d);
+	matrix_multiplication<<<blocks, threads>>>(matrix1_d, matrix2_d, matrix3_d);
+	cudaDeviceSynchronize();
 	if(timer_flag){timer_stop(TIMER_COMPUTATION);}
 
 

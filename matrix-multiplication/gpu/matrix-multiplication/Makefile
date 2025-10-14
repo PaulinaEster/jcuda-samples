@@ -22,7 +22,7 @@ include ../config/make.def
 all: matrix_multiplication
 
 matrix_multiplication:
-	$(CCOMPILER) matrix_multiplication.c $(CFLAGS) -DWORKLOAD_$(WORKLOAD) -D$(DEBUG_FLAG) -D$(TIMER_FLAG) -o matrix_multiplication.$(WORKLOAD).exe
+	$(CCOMPILER) matrix_multiplication.cu $(CFLAGS) -DWORKLOAD_$(WORKLOAD) -D$(DEBUG_FLAG) -D$(TIMER_FLAG) -o matrix_multiplication.$(WORKLOAD).exe
 
 clean:
 	- rm -f *.o *~ matrix_multiplication.*.exe
