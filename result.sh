@@ -3,8 +3,8 @@
 
 declare -A DIRETORIOS 
 
-DIRETORIOS["./seminario-gpu"]="jcuda.matrixmultiplication.JCudaMatrixMultiplication|serial.matrixmultiplication.MatrixMultiplication"
-#DIRETORIOS["./seminario-gpu"]="serial.matrixmultiplication.MatrixMultiplication" 
+# DIRETORIOS["./seminario-gpu"]="jcuda.matrixmultiplication.JCudaMatrixMultiplication|serial.matrixmultiplication.MatrixMultiplication"
+DIRETORIOS["./seminario-gpu"]="serial.matrixmultiplication.MatrixMultiplication" 
 
 # classes=("H" "G")
 classes=("H" "H" "H" "H" "H")
@@ -16,7 +16,7 @@ logfile="./resultados/execucao.log"
 
 # Limpa/cria arquivos de log
 > "$logfile"
-> "$resultado"
+# > "$resultado"
 
 HOME_DIR="$(pwd)"
 
@@ -51,17 +51,13 @@ do
         done
     done
 done
+CUDA_DIR=("./matrix-multiplication/serial/matrix-multiplication")
 
-CUDA_DIR=("./matrix-multiplication/gpu/matrix-multiplication" "./matrix-multiplication/serial/matrix-multiplication")
-for dir in "${!CUDA_DIR[@]}"
-do
-    echo "---------- COMPILANDO $dir -----------"
-    cd $dir && make matrix_multiplication WORKLOAD=$workload TIMER=ON
-done
 for dir in "${CUDA_DIR[@]}"
 do 
     for workload in "${classes[@]}"
     do  
+        cd $dir && make matrix_multiplication WORKLOAD=$workload TIMER=ON
         cd $HOME_DIR && $dir/matrix_multiplication.$workload.exe >> "$logfile" 2>&1
         if [ $? -ne 0 ]; then
             echo "Erro na execução do '$dir/matrix_multiplication.$workload.exe' em $dir. Abortando."

@@ -27,9 +27,7 @@ source ~/.bashrc
 ```
 
 ## EXECUTAR O EXEMPLO QUE DESEJA
-```bash
-../libs/apache-maven-3.9.11/bin/mvn exec:java -Dexec.mainClass=jcuda.driver.samples.JCudaVectorAdd
-
+```bash 
 ../libs/apache-maven-3.9.11/bin/mvn exec:java -Dexec.mainClass=serial.matrixmultiplication.MatrixMultiplication -DDEBUG=true -DTIMER=true -DWORKLOAD=G
 
 ../libs/apache-maven-3.9.11/bin/mvn exec:java -Dexec.mainClass=jcuda.matrixmultiplication.JCudaMatrixMultiplication -DTIMER=true -DWORKLOAD=G
@@ -43,8 +41,8 @@ Neste trabalho você deve implementar a versão paralela de um dos programas aci
 
 - SO: Debian 6.1.148-1
 - Kernel Linux: Linux slurm-head 6.1.0-39-amd64
-- CPU: 
-- GPU:  
+- CPU: Intel(R) Xeon(R) CPU E5-2620 0 @ 2.00GHz
+- GPU: NVIDIA TITAN Xp
 - Versões de Software:
   - Compilador: GCC 11.3 G++ 11.3
   - CUDA: 11.8
