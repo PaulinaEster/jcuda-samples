@@ -42,7 +42,6 @@ public class JCudaMatrixMultiplication
     {
         Config.setupCommon();
 
-        
         int N = Config.getWorkload().getN();
         int[][] matrix1 = new int[N][N];
         int[][] matrix2 = new int[N][N];
