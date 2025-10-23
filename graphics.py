@@ -6,10 +6,10 @@ tempos_serial_java = [ ] # kernel
 tempos_paralelo = [ ]  # kernel
 tempos_paralelo_jcuda = [ ]  # kernel
 
-# tempos_serial = [318.261150, 318.261150, 318.261150, 318.261150, 318.261150 ] # total
-# tempos_serial_java = [390.907917, 402.007764, 391.601574, 396.918816, 394.149500] # total
-# tempos_paralelo = [26.668809, 26.566759, 26.527186, 27.059151, 26.509537 ] # total
-# tempos_paralelo_jcuda = [31.455419, 31.563263, 31.287826, 31.459561, 31.819042] # total
+tempos_serial = [318.261150, 318.261150, 318.261150, 318.261150, 318.261150 ] # total
+tempos_serial_java = [390.907917, 402.007764, 391.601574, 396.918816, 394.149500] # total
+tempos_paralelo = [26.668809, 26.566759, 26.527186, 27.059151, 26.509537 ] # total
+tempos_paralelo_jcuda = [31.455419, 31.563263, 31.287826, 31.459561, 31.819042] # total
 
 media_serial = np.mean(tempos_serial)
 media_serial_java = np.mean(tempos_serial_java)
@@ -77,14 +77,20 @@ plt.savefig("./resultados/speedup-kernel.png", dpi=300)
 #     "Linearização": np.mean([ ]),
 #     "Deslinearização": np.mean([ ])
 # }
-tempos_jcuda = {
-    "Memory Transfers": np.mean([ ]),
+tempos_jcuda = { 
     "Kernel": np.mean([27.916958, 28.403587, 28.227065, 28.195507, 28.513576]),
-    "Malloc": np.mean([0.142848, 0.099479, 0.088403, 0.094375, 0.131267]),
+    "Memory Transfers": np.mean([0.142848, 0.099479, 0.088403, 0.094375, 0.131267]),
     "Linearização": np.mean([1.761504, 1.612835, 1.546741, 1.651673, 1.642119]),
     "Deslinearização": np.mean([0.213142, 0.214917, 0.211059, 0.261270, 0.212357]),
     "JCudaDriver": np.mean([1.420576, 1.232160, 1.214255, 1.256457, 1.319346])
 }
+
+# tempos_cuda = {
+#     "Kernel": np.mean([24.927875, 24.949061, 24.930720, 24.968140, 24.902483]),
+#     "Memory Transfers": np.mean([0.209460, 0.209048, 0.209069, 0.209397, 0.210827]),
+#     "Linearização": np.mean([1.103617, 0.978846, 0.962170, 1.292542, 0.961996]),
+#     "Deslinearização": np.mean([0.222016, 0.222374, 0.221895, 0.228050, 0.225564])
+# }
  
 # Preparar dados
 etapas = list(tempos_jcuda.keys())
@@ -96,8 +102,8 @@ percentuais = [v / total * 100 for v in valores]
 
 plt.figure(figsize=(8,5))
 plt.bar(etapas, valores, color='skyblue')
-plt.title("Contribuição de cada etapa para o tempo total")
+plt.title("Contribuição de cada etapa para o tempo total JCUDA")
 plt.ylabel("Tempo (s)")
 plt.xticks(rotation=10)
 plt.grid(axis="y", linestyle="--", alpha=0.7)
-# plt.savefig("./resultados/tempo-etapa-jcuda.png", dpi=300)
+plt.savefig("./resultados/tempo-etapa-jcuda.png", dpi=300)
