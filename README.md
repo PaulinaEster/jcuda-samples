@@ -35,7 +35,8 @@ source ~/.bashrc
 
 ## Report
 
-Neste trabalho você deve implementar a versão paralela de um dos programas acima listados e depois fazer: descrever o ambiente de testes e discutir os resultados obtidos. 
+Neste trabalho estão implementadas as versão paralelas de uma multiplicação de matrizes utilizando Java com JCUDA e CUDA. Além disso temos a versão sequencial 
+em C e Java.
 
 ## Descrição do Ambiente de Testes
 
@@ -51,17 +52,29 @@ Neste trabalho você deve implementar a versão paralela de um dos programas aci
 
 
 #### Tempo médio de execução total 
-Se considerar o tempo total a execução com GPU teve duração maior que a execução em CPU. <br/>
-O código executado na CPU teve duração de 0.567717s com desvio padrão de 0.004795s.  <br/>
-A versão GPU teve um tempo total médio de 11.067040s com desvio padrão de 0.074159s, GPU com otimizações o tempo total médio passou a ser 2.913574s com desvio padrão de 0.008809s.
+Comparação dos tempos médios de cada versão, serial em C, serial em Java, CUDA, Java com JCUDA. <br/>
 
-![Tempo de execução total](./resultado/speedup-tempo-total.png)
+Nas versões sequenciais o tempo de execução do Java foi de 390s aproximadamente, tendo um desvio padrão de 1.52050s. A versão sequencial em C teve um tempo de 316s. <br/>
 
+A versão de CUDA teve um tempo de 26s aproximadamente, com um desvio padrão de 0.2281s. A versão de Java com JCuda teve um tempo de 31s aproximadamente com um desvio padrão de 0.1955s.
 
-#### Tempo médio de execução Kernel
-Considerando o tempo de execução apenas do Kernel a  teve resultados melhores que o código sequencial. <br/>
-A execução serial teve duração de 0.326874s com desvio padrão de 0.003859s.  <br/>
-O kernel de GPU deve duração média de 0.014477s com desvio padrão de 0.018403s.  <br/>
-O kernel de GPU com otimizações teve um tempo total médio de 0.001845s e um desvio padrão de 0.000006s. 
+<img src="./resultados/comparacao-tempo-total.png"  width="700" height="600" alt="Gráfico comparando os tempos de execução total das versões citadas acima, mostrando também o desvio padrão"/>
+ 
 
-![Tempo de execução total](./resultado/speedup-tempo-gray-trans.png)
+#### Speedup
+O speedup foi calculado com base na versão serial em C <br/>
+A versão com CUDA teve melhor speedup, cerca de 11.93 vezes, já a versão utilizando JCuda teve um speedup de 10.01 vezes.
+
+<img src="./resultados/speedup.png"  width="700" height="600" alt="gráfico de barras comparando o speedup da versão em CUDA e em JCuda"/>
+
+#### Tempo por etapa de execução
+Foi medido o tempo para cada etapa de execução, com objetivo de verificar onde estão os gargalos e se tem como melhorar na etapa de maior duração. <br/>
+Os tempos medidos foram: <br/>
+  Memory Transfers<br/>
+  Kernel <br/>
+  Linearização <br/>
+  Deslinearização <br/>
+  JCudaDriver (se aplicavel)  <br/>
+
+<img src="./resultados/tempo-etapa-jcuda.png"  width="500" height="400" alt="gráfico mostrando o tempo de cada etapa de execução do Java com JCUDA" />
+<img src="./resultados/tempo-etapa-cuda.png"  width="500" height="400" alt="gráfico mostrando o tempo de cada etapa de execução do CUDA"/>
