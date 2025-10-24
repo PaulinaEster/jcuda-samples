@@ -58,7 +58,8 @@ Nas versões sequenciais o tempo de execução do Java foi de 390s aproximadamen
 
 A versão de CUDA teve um tempo de 26s aproximadamente, com um desvio padrão de 0.2281s. A versão de Java com JCuda teve um tempo de 31s aproximadamente com um desvio padrão de 0.1955s.
 
-<img src="./resultados/comparacao-tempo-total.png"  width="700" height="600" alt="Gráfico comparando os tempos de execução total das versões citadas acima, mostrando também o desvio padrão"/>
+<img src="./resultados/comparacao-tempo-total.png"  width="700" height="600" alt="Gráfico comparando os tempos de execução total das versões citadas acima, mostrando também o desvio padrão"
+/>
  
 
 #### Speedup
