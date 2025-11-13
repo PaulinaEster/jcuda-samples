@@ -56,7 +56,8 @@ Comparação dos tempos médios de cada versão, serial em C, serial em Java, CU
 
 Nas versões sequenciais o tempo de execução do Java foi de 390s aproximadamente, tendo um desvio padrão de 1.52050s. A versão sequencial em C teve um tempo de 316s. <br/>
 
-A versão de CUDA teve um tempo de 26s aproximadamente, com um desvio padrão de 0.2281s. A versão de Java com JCuda teve um tempo de 31s aproximadamente com um desvio padrão de 0.1955s.
+A versão de CUDA teve um tempo de 26s aproximadamente, com um desvio padrão de 0.2281s. A versão de Java com JCuda teve um tempo de 31s aproximadamente com um desvio padrão de 0.1955s. <br/>
+O tempo de execução maior na versão com JCuda ocorre porque as chamadas da API Java funcionam como uma camada de ligação (binding) sobre o código nativo em C/C++ e o Java não possui acesso direto à GPU, dependendo dessa conversão para utiliza-lá.
 
 <img src="./resultados/comparacao-tempo-total.png"  width="700" height="600" alt="Gráfico comparando os tempos de execução total das versões citadas acima, mostrando também o desvio padrão"
 />
